@@ -1,0 +1,235 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Interface</title>
+    <style>
+        body {
+            background-color: lightgray;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            width: 1800px;
+            height: 600px;
+            margin: 20px auto;
+        }
+        table {
+            width: 100%;
+            height: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        td {
+            border: 1px solid black;
+            padding: 0;
+        }
+        button {
+            width: 100%;
+            height: 100%;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            text-align: center;
+            color: inherit;
+            background-color: inherit;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        button:hover {
+            filter: brightness(90%);
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <table id="buttonTable"></table>
+    </div>
+    <script>
+        // Define the grid data (same structure as C# code)
+        const gridData = [
+            // Row 0 - Headers
+            [
+                { text: "Group", bg: "red", fg: "white" },
+                { text: "Category", bg: "red", fg: "white" },
+                { text: "Product/Project Name", bg: "red", fg: "white" },
+                { text: "Product Innovation Type", bg: "red", fg: "white" },
+                { text: "Phase", bg: "red", fg: "white" },
+                { text: "Condition", bg: "red", fg: "white" },
+                { text: "Status", bg: "red", fg: "white" },
+                { text: "OBS Date", bg: "red", fg: "white" },
+                { text: "Next Gate", bg: "red", fg: "white" },
+                { text: "CPM", bg: "red", fg: "white" },
+                { text: "PE", bg: "red", fg: "white" },
+                { text: "CDM", bg: "red", fg: "white" },
+                { text: "MPE", bg: "red", fg: "white" },
+                { text: "DE", bg: "red", fg: "white" },
+                { text: "Awarded Vendor", bg: "red", fg: "white" },
+                { text: "Potential Vendor", bg: "red", fg: "white" },
+                { text: "Material Number", bg: "red", fg: "white" }
+            ],
+            // Rows 1-10: Light green, blank
+            ...Array(10).fill().map(() => Array(17).fill({ text: "", bg: "lightgreen", fg: "black" })),
+            // Row 11
+            [
+                { text: "Select All", bg: "blue", fg: "white" },
+                { text: "UnSelect All", bg: "lightgray", fg: "black" },
+                { text: "Total: 504, 1 Cells Selected", bg: "pink", fg: "black" },
+                { text: "Loan Title", bg: "pink", fg: "black" },
+                { text: "Kanban All", bg: "lightsalmon", fg: "black" },
+                { text: "Prod Sync 1080", bg: "lightyellow", fg: "black" },
+                { text: "Name", bg: "white", fg: "black" },
+                { text: "Late Tasks", bg: "red", fg: "white" },
+                { text: "Key Milestones", bg: "yellow", fg: "black" },
+                { text: "Gate Submit", bg: "lightyellow", fg: "black" },
+                { text: "Update Data", bg: "pink", fg: "black" },
+                { text: "All Actions", bg: "magenta", fg: "white" },
+                { text: "", bg: "white", fg: "black" },
+                { text: "", bg: "white", fg: "black" },
+                { text: "", bg: "white", fg: "black" },
+                { text: "", bg: "white", fg: "black" },
+                { text: "", bg: "white", fg: "black" }
+            ],
+            // Row 12
+            [
+                { text: "82", bg: "pink", fg: "black" },
+                { text: "Kan Forecast", bg: "red", fg: "white" },
+                { text: "ProdSync 2K", bg: "red", fg: "white" },
+                { text: "Assignee", bg: "white", fg: "black" },
+                { text: "Late & Upcoming", bg: "yellow", fg: "black" },
+                { text: "Timelines", bg: "blue", fg: "white" },
+                { text: "Material Status", bg: "black", fg: "white" },
+                { text: "Get Material No", bg: "red", fg: "white" },
+                { text: "Action List", bg: "red", fg: "white" },
+                { text: "Open", bg: "lightgray", fg: "black" },
+                { text: "Tool Release Check", bg: "blue", fg: "white" },
+                { text: "PEM Timeline", bg: "blue", fg: "white" },
+                { text: "", bg: "white", fg: "black" },
+                { text: "", bg: "white", fg: "black" },
+                { text: "", bg: "white", fg: "black" },
+                { text: "", bg: "white", fg: "black" },
+                { text: "", bg: "white", fg: "black" }
+            ],
+            // Row 13
+            [
+                { text: "Refresh the List", bg: "lightgreen", fg: "black" },
+                { text: "Summary", bg: "khaki", fg: "black" },
+                { text: "Kanban 4 - Cost", bg: "lightcoral", fg: "black" },
+                { text: "Core Team Deck", bg: "lightpink", fg: "black" },
+                { text: "WF Project", bg: "lightcyan", fg: "black" },
+                { text: "Find Projects", bg: "lightblue", fg: "black" },
+                { text: "All Open Tasks", bg: "lightcyan", fg: "black" },
+                { text: "Time & Owner", bg: "blue", fg: "white" },
+                { text: "MSRP FOB", bg: "black", fg: "white" },
+                { text: "Business Brief", bg: "orange", fg: "black" },
+                { text: "All Action List", bg: "lightcyan", fg: "black" },
+                { text: "Sample Tracker", bg: "blue", fg: "white" },
+                { text: "Gate Deliverables", bg: "pink", fg: "black" },
+                { text: "Get Values", bg: "pink", fg: "black" },
+                { text: "", bg: "white", fg: "black" },
+                { text: "", bg: "white", fg: "black" },
+                { text: "", bg: "white", fg: "black" }
+            ],
+            // Row 14
+            [
+                { text: "Choose Views", bg: "pink", fg: "black" },
+                { text: "Load All Projects", bg: "yellow", fg: "black" },
+                { text: "Start RT", bg: "red", fg: "white" },
+                { text: "Kanban 2", bg: "lightsalmon", fg: "black" },
+                { text: "Budget - All", bg: "lightblue", fg: "black" },
+                { text: "Vendor Deck", bg: "yellow", fg: "black" },
+                { text: "Folder List", bg: "lightcyan", fg: "black" },
+                { text: "Assignment", bg: "red", fg: "white" },
+                { text: "Smart Sheet (TBD)", bg: "purple", fg: "white" },
+                { text: "PKG Timeline", bg: "blue", fg: "white" },
+                { text: "Brief Summary", bg: "orange", fg: "black" },
+                { text: "PAE Test Lab", bg: "black", fg: "white" },
+                { text: "LRB Timeline", bg: "blue", fg: "white" },
+                { text: "Plan VS Actual", bg: "red", fg: "white" },
+                { text: "Kids2 EE Site", bg: "red", fg: "white" },
+                { text: "", bg: "white", fg: "black" },
+                { text: "", bg: "white", fg: "black" }
+            ]
+        ];
+
+        // Function to create the table
+        function createTable() {
+            const table = document.getElementById("buttonTable");
+            gridData.forEach(rowData => {
+                const row = document.createElement("tr");
+                rowData.forEach(cellData => {
+                    const cell = document.createElement("td");
+                    const button = document.createElement("button");
+                    button.textContent = cellData.text;
+                    button.style.backgroundColor = cellData.bg;
+                    button.style.color = cellData.fg;
+                    button.addEventListener("click", () => handleButtonClick(button, cellData.text));
+                    cell.appendChild(button);
+                    row.appendChild(cell);
+                });
+                table.appendChild(row);
+            });
+        }
+
+        // Function to handle button clicks
+        function handleButtonClick(button, text) {
+            console.log(`点击: ${text}`);
+            button.style.color = "aqua";
+            button.style.backgroundColor = "white";
+            if (text === "Start RT") {
+                // Simulate checking if process is running (not possible in browser)
+                const isProcessRunning = false; // Placeholder for demo
+                if (isProcessRunning) {
+                    alert("Please close the RealTime before restarting.");
+                } else {
+                    alert("RealTime is not open, proceeding to Start.");
+                    console.log("Attempting to start RealTime via shortcut (not supported in browser).");
+                    // In a real scenario, launching local apps is restricted; this is a simulation
+                }
+            }
+        }
+
+        // Initialize the table on page load
+        window.onload = createTable;
+    </script>
+</body>
+</html>
